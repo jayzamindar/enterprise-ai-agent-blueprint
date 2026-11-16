@@ -22,7 +22,7 @@ import re
 import shutil
 import subprocess
 import sys
-from typing import Final
+from typing import Any, Final
 
 # Canonical validation patterns
 PROJECT_ID_PATTERN: Final[str] = r"^[a-z][a-z0-9-]*[a-z0-9]$"
@@ -35,6 +35,44 @@ RESIDUAL_PROHIBITED_TOKENS: Final[tuple[str, ...]] = (
     "finops_sre_sentinel",
     "sentinel://",
 )
+
+# Deployment Target Profiles
+DEPLOY_TARGET_PROFILES: Final[dict[str, dict[str, Any]]] = {
+    "aws-free-tier": {
+        "label": "AWS Free Tier (t3.micro / t4g.small)",
+        "guide": "AWS_Deployment_Guide.md",
+        "max_memory_mb": 512,
+        "memory_watch_mb": 450,
+        "max_output_tokens": 4000,
+    },
+    "azure-free-tier": {
+        "label": "Azure Free Tier (App Service F1 / Container Apps)",
+        "guide": "Azure_Deployment_Guide.md",
+        "max_memory_mb": 1024,
+        "memory_watch_mb": 850,
+        "max_output_tokens": 4000,
+    },
+    "standard-cloud": {
+        "label": "Standard Enterprise Cloud (AWS / Azure / Kubernetes)",
+        "guide": "Cloud_Deployment_Guide.md",
+        "max_memory_mb": 2048,
+        "memory_watch_mb": 1750,
+        "max_output_tokens": 8192,
+    },
+}
+
+# AI Orchestration Profiles
+ORCHESTRATION_PROFILES: Final[dict[str, str]] = {
+    "zero-bloat": (
+        "Strictly forbid heavy AI orchestrator frameworks (LangChain, LlamaIndex, crewAI, AutoGen). "
+        "All agent reasoning, tool calling, and workflow dispatching must be executed via direct, typed SDK/REST calls."
+    ),
+    "orchestrated": (
+        "Permits approved multi-agent and workflow orchestration frameworks (e.g., LangGraph, CrewAI, AutoGen, or LlamaIndex) "
+        "provided that all inter-agent messages, state schemas, and data contracts strictly enforce Pydantic v2 validation "
+        "(extra='forbid', frozen=True) and all tool executions are encapsulated inside deterministic GuardrailEngine wrappers."
+    ),
+}
 
 GITIGNORE_TEMPLATE: Final[str] = """# ==============================================================================
 # Baseline Git Ignore Configuration for Autonomous AI Coding Workflows
@@ -104,6 +142,14 @@ class ProjectConfig:
     force: bool
     git_init: bool
     scaffold_dirs: bool
+    deploy_target: str
+    deploy_target_label: str
+    orchestrator: str
+    orchestration_policy: str
+    max_memory_mb: int
+    memory_watch_mb: int
+    max_output_tokens: int
+    cloud_deployment_guide: str
 
 
 def validate_project_id(project_id: str) -> None:
@@ -186,6 +232,20 @@ def parse_arguments(repo_root: Path) -> ProjectConfig:
     parser.add_argument("--port", type=int, default=8080, help="Default service port (default: 8080)")
     parser.add_argument(
         "--primary-model", type=str, default="gemini-3.8-flash-high", help="Primary LLM engine model identifier"
+    )
+    parser.add_argument(
+        "--deploy-target",
+        type=str,
+        choices=list(DEPLOY_TARGET_PROFILES.keys()),
+        default=None,
+        help="Deployment environment profile (choices: standard-cloud, aws-free-tier, azure-free-tier; default: standard-cloud)",
+    )
+    parser.add_argument(
+        "--orchestrator",
+        type=str,
+        choices=list(ORCHESTRATION_PROFILES.keys()),
+        default=None,
+        help="AI orchestration architecture (choices: zero-bloat, orchestrated; default: zero-bloat)",
     )
     parser.add_argument(
         "--target-dir",
@@ -272,6 +332,34 @@ def parse_arguments(repo_root: Path) -> ProjectConfig:
         ).lower()
         scaffold_dirs = scaffold_choice in ("y", "yes")
 
+    # Deployment target profile resolution
+    deploy_target = args.deploy_target
+    if not deploy_target:
+        if interactive_mode:
+            print("\nSelect Deployment Target Profile:")
+            print("  1) standard-cloud  - Standard Enterprise Cloud (2048MB RAM, 8192 tokens) [Default]")
+            print("  2) aws-free-tier   - AWS Free Tier t3.micro/t4g.small (512MB RAM, 4000 tokens)")
+            print("  3) azure-free-tier - Azure Free Tier App Service F1/Container Apps (1024MB RAM, 4000 tokens)")
+            choice = prompt_user("Enter choice (standard-cloud/aws-free-tier/azure-free-tier)", "standard-cloud").strip().lower()
+            deploy_target = choice if choice in DEPLOY_TARGET_PROFILES else "standard-cloud"
+        else:
+            deploy_target = "standard-cloud"
+
+    # AI orchestration mode resolution
+    orchestrator = args.orchestrator
+    if not orchestrator:
+        if interactive_mode:
+            print("\nSelect AI Orchestration Standard:")
+            print("  1) zero-bloat   - Zero-Bloat Antigravity Standard (Direct typed SDK/REST calls; strictly forbid heavy frameworks) [Default]")
+            print("  2) orchestrated - Governed Framework Allowance (LangGraph, CrewAI, AutoGen with Pydantic v2 contracts and Guardrails)")
+            choice = prompt_user("Enter choice (zero-bloat/orchestrated)", "zero-bloat").strip().lower()
+            orchestrator = choice if choice in ORCHESTRATION_PROFILES else "zero-bloat"
+        else:
+            orchestrator = "zero-bloat"
+
+    target_profile = DEPLOY_TARGET_PROFILES[deploy_target]
+    orchestration_policy = ORCHESTRATION_PROFILES[orchestrator]
+
     webhook_secret = f"{default_env}_WEBHOOK_SECRET"
 
     return ProjectConfig(
@@ -290,6 +378,14 @@ def parse_arguments(repo_root: Path) -> ProjectConfig:
         force=args.force,
         git_init=git_init,
         scaffold_dirs=scaffold_dirs,
+        deploy_target=deploy_target,
+        deploy_target_label=str(target_profile["label"]),
+        orchestrator=orchestrator,
+        orchestration_policy=str(orchestration_policy),
+        max_memory_mb=int(target_profile["max_memory_mb"]),
+        memory_watch_mb=int(target_profile["memory_watch_mb"]),
+        max_output_tokens=int(target_profile["max_output_tokens"]),
+        cloud_deployment_guide=str(target_profile["guide"]),
     )
 
 
@@ -340,6 +436,12 @@ def replace_placeholder_tokens(text: str, config: ProjectConfig) -> tuple[str, i
         ("{{MCP_URI_PREFIX}}", config.mcp_prefix),
         ("{{DB_PREFIX}}", config.db_prefix),
         ("{{ENV_PREFIX}}", config.env_prefix),
+        ("{{DEPLOY_TARGET_LABEL}}", config.deploy_target_label),
+        ("{{MAX_MEMORY_MB}}", str(config.max_memory_mb)),
+        ("{{MEMORY_WATCH_MB}}", str(config.memory_watch_mb)),
+        ("{{MAX_OUTPUT_TOKENS}}", str(config.max_output_tokens)),
+        ("{{ORCHESTRATION_POLICY}}", config.orchestration_policy),
+        ("{{CLOUD_DEPLOYMENT_GUIDE}}", config.cloud_deployment_guide),
     ]
 
     for token, val in token_map:
@@ -365,7 +467,7 @@ def replace_placeholder_tokens(text: str, config: ProjectConfig) -> tuple[str, i
 
 def reconfigure_gemini_md(file_path: Path, config: ProjectConfig, source_path: Path) -> tuple[int, str, str]:
     """Reconfigure GEMINI.md project configuration and identifiers."""
-    read_path = file_path if file_path.exists() else source_path
+    read_path = source_path if source_path.exists() else file_path
     if not read_path.exists():
         return 0, f"File not found: {read_path}", ""
 
@@ -389,7 +491,7 @@ def reconfigure_gemini_md(file_path: Path, config: ProjectConfig, source_path: P
 
 def reconfigure_blueprint_md(file_path: Path, config: ProjectConfig, source_path: Path) -> tuple[int, str, str]:
     """Reconfigure Enterprise_Blueprint.md, reset checklist boxes, and update paths."""
-    read_path = file_path if file_path.exists() else source_path
+    read_path = source_path if source_path.exists() else file_path
     if not read_path.exists():
         return 0, f"File not found: {read_path}", ""
 
@@ -413,7 +515,7 @@ def reconfigure_blueprint_md(file_path: Path, config: ProjectConfig, source_path
 
 def reconfigure_readme(file_path: Path, config: ProjectConfig, source_path: Path) -> tuple[int, str, str]:
     """Reconfigure README.md with new project details."""
-    read_path = file_path if file_path.exists() else source_path
+    read_path = source_path if source_path.exists() else file_path
     if not read_path.exists():
         return 0, f"File not found: {read_path}", ""
 
@@ -429,7 +531,7 @@ def reconfigure_readme(file_path: Path, config: ProjectConfig, source_path: Path
 
 def reconfigure_debug_log(file_path: Path, config: ProjectConfig, source_path: Path) -> tuple[int, str, str]:
     """Reset Section 2 incident log while permanently preserving Section 3 historical loopholes."""
-    read_path = file_path if file_path.exists() else source_path
+    read_path = source_path if source_path.exists() else file_path
     if not read_path.exists():
         return 0, f"File not found: {read_path}", ""
 
@@ -468,7 +570,7 @@ def reconfigure_debug_log(file_path: Path, config: ProjectConfig, source_path: P
 
 def reconfigure_modular_prompt(file_path: Path, config: ProjectConfig, source_path: Path) -> tuple[int, str, str]:
     """Reconfigure modular_prompt.md with new project details if present."""
-    read_path = file_path if file_path.exists() else source_path
+    read_path = source_path if source_path.exists() else file_path
     if not read_path.exists():
         return 0, f"File not found: {read_path}", ""
 
@@ -555,30 +657,33 @@ def initialize_git_repository(config: ProjectConfig) -> list[str]:
         actions.append("[!] WARNING: 'git' CLI executable not found on system PATH. Skipped repository init.")
         return actions
 
-    # 3. Initialize Git repository
+    # 3. Initialize Git repository & stage files
     if config.dry_run:
         actions.append(f"[DRY-RUN] Would initialize Git repository (branch: main) in: {config.target_dir}")
         actions.append("[DRY-RUN] Would stage initial governance files (git add .)")
         return actions
 
-    git_dir = config.target_dir / ".git"
-    if not git_dir.exists():
-        init_cmd = [git_bin, "init", "-b", "main"]
-        res = subprocess.run(init_cmd, cwd=config.target_dir, capture_output=True, text=True, check=False)
-        if res.returncode != 0:
-            # Fallback for legacy git versions lacking -b
-            subprocess.run([git_bin, "init"], cwd=config.target_dir, capture_output=True, text=True, check=False)
-            subprocess.run([git_bin, "checkout", "-b", "main"], cwd=config.target_dir, capture_output=True, text=True, check=False)
-        actions.append("Initialized Git repository on branch 'main'")
-    else:
-        actions.append("Existing Git repository detected; retaining active history")
+    try:
+        git_dir = config.target_dir / ".git"
+        if not git_dir.exists():
+            init_cmd = [git_bin, "init", "-b", "main"]
+            res = subprocess.run(init_cmd, cwd=config.target_dir, capture_output=True, text=True, check=False)
+            if res.returncode != 0:
+                # Fallback for legacy git versions lacking -b
+                subprocess.run([git_bin, "init"], cwd=config.target_dir, capture_output=True, text=True, check=False)
+                subprocess.run([git_bin, "checkout", "-b", "main"], cwd=config.target_dir, capture_output=True, text=True, check=False)
+            actions.append("Initialized Git repository on branch 'main'")
+        else:
+            actions.append("Existing Git repository detected; retaining active history")
 
-    # 4. Stage files
-    add_res = subprocess.run([git_bin, "add", "."], cwd=config.target_dir, capture_output=True, text=True, check=False)
-    if add_res.returncode == 0:
-        actions.append("Staged initial governance and configuration files (git add .)")
-    else:
-        actions.append(f"[!] Warning during 'git add .': {add_res.stderr.strip()}")
+        # 4. Stage files
+        add_res = subprocess.run([git_bin, "add", "."], cwd=config.target_dir, capture_output=True, text=True, check=False)
+        if add_res.returncode == 0:
+            actions.append("Staged initial governance and configuration files (git add .)")
+        else:
+            actions.append(f"[!] Warning during 'git add .': {add_res.stderr.strip()}")
+    except (subprocess.SubprocessError, OSError) as e:
+        actions.append(f"[!] Warning: Git operation encountered an error ({e}); bootstrap completed with files in place.")
 
     return actions
 
@@ -634,6 +739,11 @@ def main() -> None:
     print(f"  Target Package Name:     {config.package_name}")
     print(f"  CLI Console Entrypoint:  {config.cli_entrypoint}")
     print(f"  MCP Protocol URI Prefix: {config.mcp_prefix}://")
+    print(f"  Deployment Target:       {config.deploy_target} ({config.deploy_target_label})")
+    print(f"  Deployment Guide:        docs/{config.cloud_deployment_guide}")
+    print(f"  Container RAM Ceiling:   {config.max_memory_mb}MB (Watchdog: {config.memory_watch_mb}MB)")
+    print(f"  Max Output Token Cap:    {config.max_output_tokens} tokens")
+    print(f"  AI Orchestration Mode:   {config.orchestrator}")
     print(f"  Default Service Port:    {config.service_port}")
     print(f"  Primary LLM Engine:      {config.primary_model}")
     print(f"  Webhook Signing Secret:  {config.webhook_secret}")
