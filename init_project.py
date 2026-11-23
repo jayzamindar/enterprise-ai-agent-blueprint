@@ -63,14 +63,21 @@ DEPLOY_TARGET_PROFILES: Final[dict[str, dict[str, Any]]] = {
 
 # AI Orchestration Profiles
 ORCHESTRATION_PROFILES: Final[dict[str, str]] = {
+    "orchestrated": (
+        "Permits any multi-agent, RAG, or MCP orchestration framework (including LangChain, LangGraph, LlamaIndex, "
+        "CrewAI, AutoGen, Google ADK, or direct typed SDKs) provided that all inter-agent messages, retrieval chunks, "
+        "state schemas, and data contracts strictly enforce Pydantic v2 validation (extra='forbid', frozen=True) "
+        "and all external actions/tools are encapsulated inside deterministic GuardrailEngine wrappers."
+    ),
+    "rag-mcp": (
+        "Optimized for Retrieval-Augmented Generation (RAG) and Model Context Protocol (MCP) servers using LangChain, "
+        "LangGraph, LlamaIndex, CrewAI, AutoGen, or direct SDKs with vector stores (pgvector, FAISS, Chroma). "
+        "Enforces bounded chunk ingestion (< 4,000 tokens/batch), citation/grounding verification, Pydantic v2 data "
+        "contracts (extra='forbid', frozen=True), and deterministic GuardrailEngine tool execution."
+    ),
     "zero-bloat": (
         "Strictly forbid heavy AI orchestrator frameworks (LangChain, LlamaIndex, crewAI, AutoGen). "
         "All agent reasoning, tool calling, and workflow dispatching must be executed via direct, typed SDK/REST calls."
-    ),
-    "orchestrated": (
-        "Permits approved multi-agent and workflow orchestration frameworks (e.g., LangGraph, CrewAI, AutoGen, or LlamaIndex) "
-        "provided that all inter-agent messages, state schemas, and data contracts strictly enforce Pydantic v2 validation "
-        "(extra='forbid', frozen=True) and all tool executions are encapsulated inside deterministic GuardrailEngine wrappers."
     ),
 }
 
@@ -244,8 +251,8 @@ def parse_arguments(repo_root: Path) -> ProjectConfig:
         "--orchestrator",
         type=str,
         choices=list(ORCHESTRATION_PROFILES.keys()),
-        default=None,
-        help="AI orchestration architecture (choices: zero-bloat, orchestrated; default: zero-bloat)",
+        default="orchestrated",
+        help="AI orchestration architecture (choices: orchestrated, rag-mcp, zero-bloat; default: orchestrated)",
     )
     parser.add_argument(
         "--target-dir",
@@ -347,15 +354,15 @@ def parse_arguments(repo_root: Path) -> ProjectConfig:
 
     # AI orchestration mode resolution
     orchestrator = args.orchestrator
-    if not orchestrator:
-        if interactive_mode:
-            print("\nSelect AI Orchestration Standard:")
-            print("  1) zero-bloat   - Zero-Bloat Antigravity Standard (Direct typed SDK/REST calls; strictly forbid heavy frameworks) [Default]")
-            print("  2) orchestrated - Governed Framework Allowance (LangGraph, CrewAI, AutoGen with Pydantic v2 contracts and Guardrails)")
-            choice = prompt_user("Enter choice (zero-bloat/orchestrated)", "zero-bloat").strip().lower()
-            orchestrator = choice if choice in ORCHESTRATION_PROFILES else "zero-bloat"
-        else:
-            orchestrator = "zero-bloat"
+    if interactive_mode and not any(arg.startswith("--orchestrator") for arg in sys.argv):
+        print("\nSelect AI Orchestration Standard:")
+        print("  1) orchestrated - Universal Multi-Agent / RAG / MCP (LangChain, LangGraph, LlamaIndex, CrewAI, AutoGen, Google ADK, direct SDKs) [Default]")
+        print("  2) rag-mcp      - Optimized for RAG & MCP servers (pgvector, FAISS, Chroma, citations, bounded chunks < 4000 tokens)")
+        print("  3) zero-bloat   - Zero-Bloat Direct SDK (Strictly forbid heavy orchestrators; 512MB RAM direct-SDK)")
+        choice = prompt_user("Enter choice (orchestrated/rag-mcp/zero-bloat)", "orchestrated").strip().lower()
+        orchestrator = choice if choice in ORCHESTRATION_PROFILES else "orchestrated"
+    elif not orchestrator:
+        orchestrator = "orchestrated"
 
     target_profile = DEPLOY_TARGET_PROFILES[deploy_target]
     orchestration_policy = ORCHESTRATION_PROFILES[orchestrator]

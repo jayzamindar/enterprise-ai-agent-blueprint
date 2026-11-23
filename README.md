@@ -110,7 +110,7 @@ This template repository is 100% parameter-driven using universal double-brace `
 | `{{MAX_MEMORY_MB}}` | Hard upper memory ceiling in megabytes (`512`, `1024`, `2048`) | `512`, `1024`, `2048` | [`GEMINI.md`](GEMINI.md), [`Enterprise_Blueprint.md`](Enterprise_Blueprint.md) |
 | `{{MEMORY_WATCH_MB}}` | Active reasoning RAM watchdog threshold in megabytes (`450`, `850`, `1750`) triggering fallback cascades | `450`, `850`, `1750` | [`GEMINI.md`](GEMINI.md), [`Enterprise_Blueprint.md`](Enterprise_Blueprint.md) |
 | `{{MAX_OUTPUT_TOKENS}}` | Hard output token cap for LLM responses (`4000` for Free Tier, `8192` for Standard Cloud) | `4000`, `8192` | [`GEMINI.md`](GEMINI.md), [`Enterprise_Blueprint.md`](Enterprise_Blueprint.md) |
-| `{{ORCHESTRATION_POLICY}}` | AI framework governance clause (`zero-bloat` SDK-direct vs. `orchestrated` framework allowance) | Zero-bloat direct SDK or governed framework allowance | [`GEMINI.md`](GEMINI.md), [`Enterprise_Blueprint.md`](Enterprise_Blueprint.md) |
+| `{{ORCHESTRATION_POLICY}}` | AI framework governance clause (`orchestrated` multi-agent/RAG/MCP vs. `rag-mcp` vs. `zero-bloat` direct SDK) | Governed universal framework allowance (LangChain, LangGraph, LlamaIndex, CrewAI, AutoGen, Google ADK, direct SDKs) or zero-bloat standard | [`GEMINI.md`](GEMINI.md), [`Enterprise_Blueprint.md`](Enterprise_Blueprint.md) |
 | `{{CLOUD_DEPLOYMENT_GUIDE}}` | Target cloud deployment runbook filename (`AWS_Deployment_Guide.md`, `Azure_Deployment_Guide.md`, `Cloud_Deployment_Guide.md`) | `AWS_Deployment_Guide.md`, `Cloud_Deployment_Guide.md` | [`GEMINI.md`](GEMINI.md), [`Enterprise_Blueprint.md`](Enterprise_Blueprint.md) |
 
 ---
@@ -122,13 +122,13 @@ A zero-dependency, production-grade Python 3.13+ standard library bootstrapper i
 ### 1. Turnkey Production Bootstrapping (Recommended)
 Clone, reconfigure, scaffold starter directories, initialize Git repository, and verify zero residual strings in a single command:
 
-**Standard Enterprise Cloud (Zero-Bloat Antigravity Standard - Default):**
+**Standard Enterprise Cloud (Universal Multi-Agent / RAG / MCP Orchestrated - Default):**
 ```bash
 python init_project.py \
   --project-id secops-sentinel \
   --target-dir ../secops-sentinel \
   --deploy-target standard-cloud \
-  --orchestrator zero-bloat \
+  --orchestrator orchestrated \
   --mcp-prefix secops \
   --port 8080 \
   --primary-model gemini-3.8-flash-high \
@@ -136,18 +136,19 @@ python init_project.py \
   --git-init
 ```
 
-**Azure Free Tier with Governed Orchestrator (LangGraph / CrewAI / AutoGen):**
+**Retrieval-Augmented Generation (RAG) + Model Context Protocol (MCP) Server:**
 ```bash
 python init_project.py \
-  --project-id healthcare-claims-worker \
-  --target-dir ../healthcare-claims-worker \
-  --deploy-target azure-free-tier \
-  --orchestrator orchestrated \
+  --project-id rag-mcp-demo \
+  --target-dir ../rag-mcp-demo \
+  --deploy-target standard-cloud \
+  --orchestrator rag-mcp \
+  --mcp-prefix demo \
   --scaffold-dirs \
   --git-init
 ```
 
-**AWS Free Tier Compute (t3.micro / t4g.small, 512MB RAM, Zero-Bloat):**
+**AWS Free Tier Compute (t3.micro / t4g.small, 512MB RAM, Zero-Bloat Direct SDK):**
 ```bash
 python init_project.py \
   --project-id finops-worker \
@@ -186,7 +187,7 @@ python init_project.py
 | `--port` | `int` (1024–65535) | `8080` | Default HTTP / SSE gateway service port |
 | `--primary-model` | `str` | `gemini-3.8-flash-high` | Primary frontier LLM engine identifier |
 | `--deploy-target` | `standard-cloud`, `aws-free-tier`, `azure-free-tier` | `standard-cloud` | Cloud deployment compute profile & memory cap |
-| `--orchestrator` | `zero-bloat`, `orchestrated` | `zero-bloat` | AI framework standard (direct SDK vs. governed frameworks) |
+| `--orchestrator` | `orchestrated`, `rag-mcp`, `zero-bloat` | `orchestrated` | AI framework standard (universal multi-agent/RAG/MCP frameworks vs. RAG-MCP vs. zero-bloat direct SDK) |
 | `--target-dir` | `path` | `.` | Destination root directory for cloned project |
 | `--dry-run` | Flag | `False` | Preview transformations without touching disk |
 | `--force` | Flag | `False` | Allow in-place modification of current repository |

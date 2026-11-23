@@ -10,7 +10,7 @@
 - `AUDIT_REMEDIATION_LOG.md` - Standardized chronological ledger of feature additions and security remediations.
 - `README.md` - Root navigation hub, architecture overview, token matrix, and operational quick-start.
 - `PROJECT_MAP.md` - Compact repository symbol and component index for targeted agent reads.
-- `init_project.py` - Zero-dependency project bootstrapper and customization engine.
+- `init_project.py` - Zero-dependency project bootstrapper supporting universal frameworks (LangChain, LangGraph, LlamaIndex, CrewAI, AutoGen, Google ADK, direct SDKs), RAG, and MCP server templates.
 
 ## Scaffold Target Layout (`src/{{PACKAGE_NAME}}/`)
 - `config.py` - Pydantic settings, model identifiers, memory/token thresholds, secrets.
