@@ -1,52 +1,75 @@
 # 🏛️ Universal Enterprise AI Agent Blueprint & Governance Framework
 
+<p align="center">
+  <a href="#-architecture--the-7-core-governance-files"><strong>Architecture</strong></a> •
+  <a href="#-universal-placeholder-token-specification"><strong>Token Matrix</strong></a> •
+  <a href="#-quick-start-automated-bootstrapper-init_projectpy"><strong>Quick Start</strong></a> •
+  <a href="#-the-first-5-minutes-after-cloning-quick-start-guide"><strong>First 5 Minutes</strong></a> •
+  <a href="#-post-bootstrap-domain-customization-protocol"><strong>Domain Customization</strong></a> •
+  <a href="#-verification--integrity-checklist"><strong>Integrity Checklist</strong></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.13+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.13+" />
+  <img src="https://img.shields.io/badge/Architecture-Hexagonal%20Clean-orange?style=for-the-badge" alt="Hexagonal Architecture" />
+  <img src="https://img.shields.io/badge/Pydantic-v2.0+-E92063?style=for-the-badge&logo=pydantic&logoColor=white" alt="Pydantic v2" />
+  <img src="https://img.shields.io/badge/Protocol-MCP%20Dual--Transport-blueviolet?style=for-the-badge" alt="MCP Dual-Transport" />
+  <img src="https://img.shields.io/badge/Security-Cryptographic%20HMAC-success?style=for-the-badge" alt="Cryptographic HMAC" />
+  <img src="https://img.shields.io/badge/Governance-v1.1%20Enterprise-blue?style=for-the-badge" alt="v1.1 Enterprise Standard" />
+  <img src="https://img.shields.io/badge/Coverage-≥90%25-brightgreen?style=for-the-badge" alt="Coverage ≥90%" />
+</p>
+
 > **Universal Template Standard:** Tier-1 Enterprise Autonomous Agent Governance Framework.  
-> **Status:** Turnkey Standalone Template Repository with `{{...}}` Universal Placeholders.  
-> **Runtime:** Python 3.13+ Standard Library (Zero External Dependencies for Bootstrapping).
+> **Status:** Turnkey Standalone Template Repository with `{{...}}` Universal Parameter Tokens.  
+> **Runtime:** Python 3.13+ Standard Library (Zero External Dependencies for Bootstrapping).  
+> **Forensic Memory:** 64 Battle-Tested Historical Loophole Defenses (`GEM-LH-001`–`031` & `EBP-LH-001`–`033`).
 
 ---
 
 ## 1. Overview & Architecture of the Governance Suite
 
-The **Universal Enterprise AI Agent Blueprint** solves a fundamental dilemma in autonomous software engineering: **how to maintain institutional-grade code quality, deterministic security invariants, and complete operational transparency across multi-turn autonomous coding agent sessions.**
+The **Universal Enterprise AI Agent Blueprint** solves the defining dilemma of autonomous software engineering: **how to maintain institutional-grade code quality, deterministic security invariants, and complete operational transparency across multi-turn autonomous coding agent sessions.**
 
-Autonomous agents frequently suffer from context drift, hallucinated APIs, silent error suppression, premature checklist sign-offs, and architectural regression. To prevent these failure modes, this template establishes a battle-tested tripartite governance architecture across 7 synchronized core files:
+Autonomous coding agents frequently suffer from context drift, hallucinated APIs, silent error suppression, premature checklist sign-offs, and architectural regression. To prevent these failure modes, this template establishes a battle-tested tripartite governance architecture across **7 synchronized core files**:
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       SUPREME SOURCE OF TRUTH                               │
-│                                                                             │
-│   ┌─────────────────────────────────────────────────────────────────────┐   │
-│   │                              GEMINI.md                              │   │
-│   │                 (The Supreme Law & Security Invariants)              │   │
-│   └──────────────────────────────────┬──────────────────────────────────┘   │
-│                                      │ Governs Invariants & Coding Bounds   │
-│                                      ▼                                      │
-│   ┌─────────────────────────────────────────────────────────────────────┐   │
-│   │                       Enterprise_Blueprint.md                       │   │
-│   │                 (The 12-Phase Master Engineering Roadmap)           │   │
-│   └──────────────────────────────────┬──────────────────────────────────┘   │
-│                                      │ Gates Delivery & Verification Steps  │
-│                                      ▼                                      │
-│   ┌─────────────────────────────────────────────────────────────────────┐   │
-│   │                       Blueprint_Debug_Log.md                        │   │
-│   │               (Audit Deliverables, SRE Reviews & Debug Ledger)      │   │
-│   │  • Structured Incident & Debugging Log                              │   │
-│   │  • Historical Architectural Delta & Forensic Loophole Registry      │   │
-│   │  • Zero-Regression Verification Runbooks                            │   │
-│   └─────────────────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                   SUPREME SOURCE OF TRUTH                                   │
+│                                                                                             │
+│   ┌─────────────────────────────────────────────────────────────────────────────────────┐   │
+│   │                                      GEMINI.md                                      │   │
+│   │                         (The Supreme Law & Security Invariants)                     │   │
+│   └──────────────────────────────────────────┬──────────────────────────────────────────┘   │
+│                                              │ Governs Invariants & Bounds                  │
+│                                              ▼                                              │
+│   ┌─────────────────────────────────────────────────────────────────────────────────────┐   │
+│   │                               Enterprise_Blueprint.md                               │   │
+│   │                         (The 12-Phase Master Engineering Roadmap)                   │   │
+│   └────────────────────┬─────────────────────────────────────────────────┬──────────────┘   │
+│                        │ Gates Delivery & Verification                   │ Maps Symbols     │
+│                        ▼                                                 ▼                  │
+│   ┌──────────────────────────────────────────┐      ┌───────────────────────────────────┐   │
+│   │          Blueprint_Debug_Log.md          │      │          PROJECT_MAP.md           │   │
+│   │   (Incidents & 64 Forensic Loopholes)    │      │  (Compact < 60-Line Target Index) │   │
+│   └────────────────────┬─────────────────────┘      └───────────────────────────────────┘   │
+│                        │ Tracks Feature & Remediation Milestones                            │
+│                        ▼                                                                    │
+│   ┌─────────────────────────────────────────────────────────────────────────────────────┐   │
+│   │                               AUDIT_REMEDIATION_LOG.md                              │   │
+│   │               (Chronological Feature Additions & Security Remediations)             │   │
+│   └─────────────────────────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### The 7 Core Governance Files & How They Work Together
 
 1. **[`README.md`](README.md) (Central Hub & Template Specification):**
-   - Serves as the navigation root and operational manual for engineers and agents.
+   - Serves as the executive navigation root and operational manual for engineers and autonomous agents.
    - Defines the universal `{{...}}` placeholder token matrix and provides turnkey CLI runbooks for cloning new projects.
 
 2. **[`GEMINI.md`](GEMINI.md) (The Supreme Law / Non-Negotiable Invariants):**
    - Acts as the unyielding system constitution for both human engineers and AI coding agents.
-   - Defines runtime constraints, type safety requirements (`typing`, Pydantic v2 `extra="forbid", frozen=True`), strict `ActionType` Enum permit matrices, deterministic execution overwriting (zero LLM command synthesis), full-payload HMAC-SHA256 signing with anti-replay TTLs ($\le 300\text{s}$ rejecting `current_time >= expires_at`), request idempotency deduplication (`idempotency_key`), dual-layer 10MB payload size defense, multi-tier resilience cascades (Gemini $\to$ OpenRouter $\to$ Deterministic Heuristics), dynamically instantiated per-operation SQLite WAL `filelock.FileLock` with MVCC read-bypass, startup schema versioning (`PRAGMA user_version`), graceful `SIGTERM`/`SIGINT` SSE stream drainage with WAL truncate checkpoints, Unicode NFKC normalization, and OpenAPI 3.0 Protobuf sanitization.
+   - Defines runtime constraints, type safety requirements (`typing`, Pydantic v2 `extra="forbid", frozen=True`), strict `ActionType` Enum permit matrices, deterministic execution overwriting (zero LLM command synthesis), full-payload HMAC-SHA256 signing with anti-replay TTLs ($\le 300\text{s}$ rejecting `current_time >= expires_at`), request idempotency deduplication (`idempotency_key`), dual-layer 10MB payload size defense, multi-tier resilience cascades (Gemini $\to$ OpenRouter $\to$ Deterministic Heuristics), dynamically instantiated per-operation SQLite WAL `filelock.FileLock` with MVCC read-bypass, startup schema versioning (`PRAGMA user_version`), graceful `SIGTERM`/`SIGINT` SSE stream drainage with WAL truncate checkpoints, Unicode NFKC normalization (`unicodedata.normalize("NFKC", val).strip().casefold()`), and OpenAPI 3.0 Protobuf sanitization.
    - Enforces **Cohesive Phase-Batched Execution (3–5 tightly coupled tasks/turn)**, targeted line-range reads via `PROJECT_MAP.md`, **quiet `pytest -q --tb=short` verification**, **Anti-Test-Cheating & Verifiable Proof Invariant** (zero test tampering, no self-mocking of internal functions/guardrails, mandatory verbatim pytest terminal proof), **Session Context Circuit Breaker & Fresh-Session Handoff Protocol** (preventing context rot), and the **3-Strike Anti-Looping Circuit Breaker** (halting and logging to `Blueprint_Debug_Log.md` upon 3 consecutive command failures).
 
 3. **[`Enterprise_Blueprint.md`](Enterprise_Blueprint.md) (The Master Backlog & 12-Phase Execution Roadmap):**
@@ -56,13 +79,14 @@ Autonomous agents frequently suffer from context drift, hallucinated APIs, silen
 
 4. **[`Blueprint_Debug_Log.md`](Blueprint_Debug_Log.md) (Living Operational Ledger & Forensic Memory):**
    - Centralizes real-time incident tracking across all build phases using a strict 5-step operational protocol (quarantine, forensic RCA, fix implementation, regression test, ledger recording).
-   - **Historical Loophole Registry:** Permanently preserves 64 battle-tested architectural loophole entries (`GEM-LH-001` through `GEM-LH-031` and `EBP-LH-001` through `EBP-LH-033`) documenting edge cases (e.g. SQLite WAL starvation, chunked transfer memory exhaustion, HMAC serialization desynchronization, test assertion tampering, infinite looping, cross-platform UTF-8 encoding gaps, boundary replay windows, and session context rot) so new projects never repeat identical design flaws.
+   - **Historical Loophole Registry:** Permanently preserves **64 battle-tested architectural loophole entries** (`GEM-LH-001` through `GEM-LH-031` and `EBP-LH-001` through `EBP-LH-033`) documenting edge cases (e.g. SQLite WAL starvation, chunked transfer memory exhaustion, HMAC serialization desynchronization, test assertion tampering, infinite looping, cross-platform UTF-8 encoding gaps, boundary replay windows, and session context rot) so new projects never repeat identical design flaws.
 
 5. **[`AUDIT_REMEDIATION_LOG.md`](AUDIT_REMEDIATION_LOG.md) (Chronological Feature & Remediation Ledger):**
-   - Standardized chronological ledger of new feature additions, architectural enhancements, and red-team security remediations across all versions and phases (complementing `Blueprint_Debug_Log.md`).
+   - Standardized, permanent chronological ledger of all proactive feature additions, architectural enhancements, and red-team security remediations across all versions and build phases (complementing `Blueprint_Debug_Log.md`).
 
 6. **[`PROJECT_MAP.md`](PROJECT_MAP.md) (Compact Repository Index):**
-   - Compact (< 60-line) symbol and file index mapping all repository paths to primary classes/functions for targeted agent reads, eliminating prompt context rot.
+   - Compact (< 60-line) architectural index mapping all repository paths to primary classes/functions.
+   - Enables targeted line-range reads and eliminates prompt context rot from re-reading whole repository trees.
 
 7. **[`init_project.py`](init_project.py) (The Zero-Dependency Project Bootstrapper):**
    - Standalone Python 3.13+ standard library automation script.
@@ -213,7 +237,7 @@ After running [`init_project.py`](init_project.py), engineers must manually cust
 2. **[`GEMINI.md`](GEMINI.md) Section 3.2 (`Deterministic Execution Overwriting`):**
    - Bind each canonical action verb to deterministic Python template functions (IAM policies, API execution payloads, rollback commands), ensuring the LLM never synthesizes executable commands directly.
 3. **[`GEMINI.md`](GEMINI.md) Section 3.8 (`[Reference Domain Implementation: Cloud FinOps & SRE]`):**
-   - Replace reference FinOps heuristics (EC2 CPU/memory floors, S3 object size thresholds) with your domain-specific safety bounds (e.g., maximum transaction velocity, blast-radius container caps, patient data redaction rules).
+   - Replace reference FinOps heuristics (EC2 CPU/memory floors, S3 object size thresholds) with your domain's specific safety bounds (e.g., maximum transaction velocity, blast-radius container caps, patient data redaction rules).
 4. **[`Enterprise_Blueprint.md`](Enterprise_Blueprint.md) Phases 2–4 (`Domain Heuristics & Guardrails`):**
    - Replace the reference FinOps heuristics (EC2, RDS, S3, EBS, EIP rules) with your domain's deterministic rule engines, automated rollback generators, and catalog lookup structures.
 5. **[`Enterprise_Blueprint.md`](Enterprise_Blueprint.md) Phase 5 (Tasks 5.5–5.7: `MCP Tools, Prompts & Resources`):**
