@@ -50,7 +50,7 @@ Autonomous coding agents frequently suffer from context drift, hallucinated APIs
 │                        ▼                                                 ▼                  │
 │   ┌──────────────────────────────────────────┐      ┌───────────────────────────────────┐   │
 │   │          Blueprint_Debug_Log.md          │      │          PROJECT_MAP.md           │   │
-│   │   (Incidents & 64 Forensic Loopholes)    │      │  (Compact < 60-Line Target Index) │   │
+│   │   (Incidents & 66 Forensic Loopholes)    │      │  (Compact < 60-Line Target Index) │   │
 │   └────────────────────┬─────────────────────┘      └───────────────────────────────────┘   │
 │                        │ Tracks Feature & Remediation Milestones                            │
 │                        ▼                                                                    │
@@ -79,7 +79,7 @@ Autonomous coding agents frequently suffer from context drift, hallucinated APIs
 
 4. **[`Blueprint_Debug_Log.md`](Blueprint_Debug_Log.md) (Living Operational Ledger & Forensic Memory):**
    - Centralizes real-time incident tracking across all build phases using a strict 5-step operational protocol (quarantine, forensic RCA, fix implementation, regression test, ledger recording).
-   - **Historical Loophole Registry:** Permanently preserves **64 battle-tested architectural loophole entries** (`GEM-LH-001` through `GEM-LH-031` and `EBP-LH-001` through `EBP-LH-033`) documenting edge cases (e.g. SQLite WAL starvation, chunked transfer memory exhaustion, HMAC serialization desynchronization, test assertion tampering, infinite looping, cross-platform UTF-8 encoding gaps, boundary replay windows, and session context rot) so new projects never repeat identical design flaws.
+   - **Historical Loophole Registry:** Permanently preserves **66 battle-tested architectural loophole entries** (`GEM-LH-001` through `GEM-LH-032` and `EBP-LH-001` through `EBP-LH-034`) documenting edge cases (e.g. SQLite WAL starvation, chunked transfer memory exhaustion, HMAC serialization desynchronization, test assertion tampering, infinite looping, cross-platform UTF-8 encoding gaps, boundary replay windows, session context rot, and cross-platform command syntax traps) so new projects never repeat identical design flaws.
 
 5. **[`AUDIT_REMEDIATION_LOG.md`](AUDIT_REMEDIATION_LOG.md) (Chronological Feature & Remediation Ledger):**
    - Standardized, permanent chronological ledger of all proactive feature additions, architectural enhancements, and red-team security remediations across all versions and build phases (complementing `Blueprint_Debug_Log.md`).
@@ -210,7 +210,7 @@ python init_project.py
 Whether you are a human engineer or an autonomous AI coding agent, follow this exact sequence immediately after running `init_project.py`:
 
 1. **Inspect Configuration & Repository Map:**
-   - Copy `.env.example` to `.env` (`cp .env.example .env`).
+   - Copy `.env.example` to `.env` (`cp .env.example .env` on Linux/macOS, or `Copy-Item .env.example .env` on Windows PowerShell).
    - Configure secrets: `GEMINI_API_KEY`, `PLAN_SIGNING_SECRET`, `MCP_API_KEY`, and optional `OPENROUTER_API_KEY`.
    - Review [`PROJECT_MAP.md`](PROJECT_MAP.md) to familiarize with the module layout and target file responsibilities without running full directory scans.
 2. **Review Domain Action Permits in `GEMINI.md`:**
