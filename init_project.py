@@ -406,9 +406,12 @@ def clone_governance_files(source_root: Path, target_dir: Path, dry_run: bool) -
         "GEMINI.md",
         "Enterprise_Blueprint.md",
         "Blueprint_Debug_Log.md",
+        "AUDIT_REMEDIATION_LOG.md",
         "README.md",
         "init_project.py",
     ]
+    if (source_root / "PROJECT_MAP.md").exists():
+        core_files.append("PROJECT_MAP.md")
     if (source_root / ".gitignore").exists():
         core_files.append(".gitignore")
     if (source_root / "modular_prompt.md").exists():
@@ -568,6 +571,53 @@ def reconfigure_debug_log(file_path: Path, config: ProjectConfig, source_path: P
     return replacements + 1, f"{action_label} {file_path.name} (Section 2 reset; Section 3 universal loopholes preserved)", text
 
 
+def reconfigure_audit_remediation_log(file_path: Path, config: ProjectConfig, source_path: Path) -> tuple[int, str, str]:
+    """Reset Section 2 feature/remediation log to a clean baseline initialization entry."""
+    read_path = source_path if source_path.exists() else file_path
+    if not read_path.exists():
+        return 0, f"File not found: {read_path}", ""
+
+    text = read_path.read_text(encoding="utf-8")
+    text, replacements = replace_placeholder_tokens(text, config)
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    sec2_header = "## 2. Chronological Feature & Remediation Ledger"
+    if sec2_header in text:
+        before_sec2 = text.split(sec2_header)[0]
+        clean_sec2_table = (
+            f"{sec2_header}\n\n"
+            "| Date / Version | Phase / Audit ID | Feature / Remediation Added | Files Modified | Verification Proof (Tests / CI / Commit) |\n"
+            "|---|---|---|---|---|\n"
+            f"| {today_str} / `v1.0.0` | Phase 0.0 (Project Initialized) | "
+            f"Initialized project governance suite from universal template for `{config.project_id}`. | "
+            "`GEMINI.md`, `Enterprise_Blueprint.md`, `README.md` | "
+            "Master constitutional invariants, 12-phase roadmap, and remediation ledger seeded; ready for Phase 0.1 Forensic Audit. |\n"
+        )
+        text = before_sec2 + clean_sec2_table
+
+    if not config.dry_run:
+        file_path.write_text(text, encoding="utf-8")
+
+    action_label = "[DRY-RUN] Previewed" if config.dry_run else "Reconfigured"
+    return replacements + 1, f"{action_label} {file_path.name} (Section 2 reset to baseline initialization entry)", text
+
+
+def reconfigure_project_map(file_path: Path, config: ProjectConfig, source_path: Path) -> tuple[int, str, str]:
+    """Reconfigure PROJECT_MAP.md with new project details if present."""
+    read_path = source_path if source_path.exists() else file_path
+    if not read_path.exists():
+        return 0, f"File not found: {read_path}", ""
+
+    text = read_path.read_text(encoding="utf-8")
+    text, replacements = replace_placeholder_tokens(text, config)
+
+    if not config.dry_run:
+        file_path.write_text(text, encoding="utf-8")
+
+    action_label = "[DRY-RUN] Previewed" if config.dry_run else "Reconfigured"
+    return replacements, f"{action_label} {file_path.name} ({replacements} replacements)", text
+
+
 def reconfigure_modular_prompt(file_path: Path, config: ProjectConfig, source_path: Path) -> tuple[int, str, str]:
     """Reconfigure modular_prompt.md with new project details if present."""
     read_path = source_path if source_path.exists() else file_path
@@ -611,11 +661,43 @@ def scaffold_directory_skeleton(config: ProjectConfig) -> list[str]:
     docs_dir = config.target_dir / "docs"
     prompts_dir = config.target_dir / "prompts" / "modules"
 
+    project_map_file = config.target_dir / "PROJECT_MAP.md"
+    project_map_content = f"""# Project Map — {config.project_title} (`{config.project_id}`)
+
+> Compact repository index for targeted reads (< 60 lines).
+> Runtime: Python 3.13+ | Architecture: Clean Modular Hexagonal
+
+## Core Source Tree (`src/{config.package_name}/`)
+- `config.py` - Pydantic settings, model identifiers, memory/token thresholds, secrets.
+- `models/` - Pydantic v2 data contracts, ActionType Enum, telemetry, plans.
+- `guardrails/` - Safety scoring, quarantine patterns, deterministic IAM/rollback synthesis.
+- `heuristics/` - Offline deterministic rule engines, pricing catalog lookups.
+- `reasoner/` - Gemini client (thinkingBudget, responseSchema), OpenRouter fallback.
+- `ledger/` - SQLite WAL persistent audit store with per-operation FileLock.
+- `mcp/` - Dual-transport MCP server (stdio JSON-RPC & Starlette SSE).
+- `observability.py` - OpenTelemetry spans, metrics, and structured logging.
+- `cli.py` - Click console entrypoint commands (`{config.project_id}`).
+
+## Test Suite (`tests/`)
+- `test_schemas.py` - Contract validation, ActionType enum allowlist tests.
+- `test_heuristics.py` - Heuristic rule coverage, catalog fallback verification.
+- `test_reasoner.py` - LLM reasoning, responseSchema sanitization, cascade tests.
+- `test_mcp.py` - stdio and SSE transport protocols, 10MB limits, auth verification.
+- `test_ledger.py` - SQLite WAL concurrency, MVCC read-bypass, migration tests.
+- `test_phase9_hardening.py` - Cryptographic HMAC, anti-replay, Unicode normalization.
+
+## Governance & Specifications
+- `GEMINI.md` - Master constitution, security invariants, operational rules.
+- `Enterprise_Blueprint.md` - 12-phase master engineering plan and active backlog.
+- `Blueprint_Debug_Log.md` - Incident tracking and historical loophole registry.
+- `README.md` - Root navigation hub, architecture summary, and operational manual.
+"""
     scaffold_plan = [
         (pkg_dir, pkg_init, f'"""{config.project_title} package root."""\n\n__version__ = "0.1.0"\n'),
         (tests_dir, tests_init, f'"""Test suite for {config.project_title}."""\n'),
         (docs_dir, None, None),
         (prompts_dir, None, None),
+        (config.target_dir, project_map_file, project_map_content),
     ]
 
     for d_path, f_path, content in scaffold_plan:
@@ -624,14 +706,20 @@ def scaffold_directory_skeleton(config: ProjectConfig) -> list[str]:
             actions.append(f"[DRY-RUN] Would scaffold directory: {rel_d}/")
             if f_path is not None:
                 rel_f = f_path.relative_to(config.target_dir)
-                actions.append(f"[DRY-RUN] Would scaffold starter file: {rel_f}")
+                if not f_path.exists():
+                    actions.append(f"[DRY-RUN] Would scaffold starter file: {rel_f}")
+                else:
+                    actions.append(f"[DRY-RUN] File already exists (will not overwrite): {rel_f}")
         else:
             d_path.mkdir(parents=True, exist_ok=True)
             actions.append(f"Scaffolded directory: {rel_d}/")
-            if f_path is not None and not f_path.exists():
-                f_path.write_text(content or "", encoding="utf-8")
+            if f_path is not None:
                 rel_f = f_path.relative_to(config.target_dir)
-                actions.append(f"Scaffolded starter file: {rel_f}")
+                if not f_path.exists():
+                    f_path.write_text(content or "", encoding="utf-8")
+                    actions.append(f"Scaffolded starter file: {rel_f}")
+                else:
+                    actions.append(f"Retained existing file: {rel_f}")
 
     return actions
 
@@ -778,6 +866,14 @@ def main() -> None:
         (reconfigure_readme, readme_file, repo_root / "README.md"),
         (reconfigure_debug_log, debug_log_file, repo_root / "Blueprint_Debug_Log.md"),
     ]
+
+    audit_log_file = config.target_dir / "AUDIT_REMEDIATION_LOG.md"
+    if (repo_root / "AUDIT_REMEDIATION_LOG.md").exists():
+        targets.append((reconfigure_audit_remediation_log, audit_log_file, repo_root / "AUDIT_REMEDIATION_LOG.md"))
+
+    project_map_file = config.target_dir / "PROJECT_MAP.md"
+    if (repo_root / "PROJECT_MAP.md").exists():
+        targets.append((reconfigure_project_map, project_map_file, repo_root / "PROJECT_MAP.md"))
 
     if (repo_root / "modular_prompt.md").exists():
         targets.append((reconfigure_modular_prompt, modular_prompt_file, repo_root / "modular_prompt.md"))

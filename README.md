@@ -10,7 +10,7 @@
 
 The **Universal Enterprise AI Agent Blueprint** solves a fundamental dilemma in autonomous software engineering: **how to maintain institutional-grade code quality, deterministic security invariants, and complete operational transparency across multi-turn autonomous coding agent sessions.**
 
-Autonomous agents frequently suffer from context drift, hallucinated APIs, silent error suppression, premature checklist sign-offs, and architectural regression. To prevent these failure modes, this template establishes a battle-tested tripartite governance architecture across 5 synchronized core files:
+Autonomous agents frequently suffer from context drift, hallucinated APIs, silent error suppression, premature checklist sign-offs, and architectural regression. To prevent these failure modes, this template establishes a battle-tested tripartite governance architecture across 7 synchronized core files:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -38,7 +38,7 @@ Autonomous agents frequently suffer from context drift, hallucinated APIs, silen
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### The 5 Core Governance Files & How They Work Together
+### The 7 Core Governance Files & How They Work Together
 
 1. **[`README.md`](README.md) (Central Hub & Template Specification):**
    - Serves as the navigation root and operational manual for engineers and agents.
@@ -46,21 +46,28 @@ Autonomous agents frequently suffer from context drift, hallucinated APIs, silen
 
 2. **[`GEMINI.md`](GEMINI.md) (The Supreme Law / Non-Negotiable Invariants):**
    - Acts as the unyielding system constitution for both human engineers and AI coding agents.
-   - Defines runtime constraints, type safety requirements (`typing`, Pydantic v2 `extra="forbid", frozen=True`), strict `ActionType` Enum permit matrices, deterministic execution overwriting (zero LLM command synthesis), full-payload HMAC-SHA256 signing with anti-replay TTLs ($\le 300\text{s}$), request idempotency deduplication (`idempotency_key`), dual-layer 10MB payload size defense, multi-tier resilience cascades (Gemini $\to$ OpenRouter $\to$ Deterministic Heuristics), SQLite WAL file locking with MVCC read-bypass, startup schema versioning (`PRAGMA user_version`), graceful `SIGTERM`/`SIGINT` SSE stream drainage with WAL truncate checkpoints, and OpenAPI 3.0 Protobuf sanitization.
-   - Enforces the **Anti-Test-Cheating & Verifiable Proof Invariant** (zero test tampering, no self-mocking of internal functions/guardrails, mandatory verbatim pytest terminal proof) and the **3-Strike Anti-Looping Circuit Breaker** (halting and logging to `Blueprint_Debug_Log.md` upon 3 consecutive command failures).
+   - Defines runtime constraints, type safety requirements (`typing`, Pydantic v2 `extra="forbid", frozen=True`), strict `ActionType` Enum permit matrices, deterministic execution overwriting (zero LLM command synthesis), full-payload HMAC-SHA256 signing with anti-replay TTLs ($\le 300\text{s}$ rejecting `current_time >= expires_at`), request idempotency deduplication (`idempotency_key`), dual-layer 10MB payload size defense, multi-tier resilience cascades (Gemini $\to$ OpenRouter $\to$ Deterministic Heuristics), dynamically instantiated per-operation SQLite WAL `filelock.FileLock` with MVCC read-bypass, startup schema versioning (`PRAGMA user_version`), graceful `SIGTERM`/`SIGINT` SSE stream drainage with WAL truncate checkpoints, Unicode NFKC normalization, and OpenAPI 3.0 Protobuf sanitization.
+   - Enforces the **Token-Efficient Phase-Batched Execution Protocol** (1 phase or 3–5 tasks per turn), targeted line-range reads via `PROJECT_MAP.md`, quiet verification chains, **Anti-Test-Cheating & Verifiable Proof Invariant** (zero test tampering, no self-mocking of internal functions/guardrails, mandatory verbatim pytest terminal proof), **Session Context Circuit Breaker & Fresh-Session Handoff Protocol**, and the **3-Strike Anti-Looping Circuit Breaker** (halting and logging to `Blueprint_Debug_Log.md` upon 3 consecutive command failures).
 
 3. **[`Enterprise_Blueprint.md`](Enterprise_Blueprint.md) (The Master Backlog & 12-Phase Execution Roadmap):**
    - Serves as the living engineering roadmap and task checklist across Phases 0–12.
    - Defines the strict architectural Definition of Done (DoD) for every milestone.
-   - Enforces piece-by-piece, single-module-per-turn execution with mandatory local (`ruff`, `mypy`, `pytest >= 90%`) and CI/CD verification gates before any task checkbox (`[ ]`) can be marked complete (`[x]`).
+   - Enforces cohesive phase-batched execution with mandatory local (`ruff`, `mypy`, `pytest >= 90%`) and CI/CD supply-chain verification gates (PEP 639 license audits, scoped secret scans, pinned lockfiles, live GitHub Actions proof) before any task checkbox (`[ ]`) can be marked complete (`[x]`).
 
 4. **[`Blueprint_Debug_Log.md`](Blueprint_Debug_Log.md) (Living Operational Ledger & Forensic Memory):**
    - Centralizes real-time incident tracking across all build phases using a strict 5-step operational protocol (quarantine, forensic RCA, fix implementation, regression test, ledger recording).
-   - **Historical Loophole Registry:** Permanently preserves 47 battle-tested architectural loophole entries (`GEM-LH-001` through `GEM-LH-023` and `EBP-LH-001` through `EBP-LH-024`) documenting edge cases (e.g. SQLite WAL starvation, chunked transfer memory exhaustion, HMAC serialization desynchronization, test assertion tampering, infinite looping, cross-platform UTF-8 encoding gaps) so new projects never repeat identical design flaws.
+   - **Historical Loophole Registry:** Permanently preserves 64 battle-tested architectural loophole entries (`GEM-LH-001` through `GEM-LH-031` and `EBP-LH-001` through `EBP-LH-033`) documenting edge cases (e.g. SQLite WAL starvation, chunked transfer memory exhaustion, HMAC serialization desynchronization, test assertion tampering, infinite looping, cross-platform UTF-8 encoding gaps, boundary replay windows, and session context rot) so new projects never repeat identical design flaws.
 
-5. **[`init_project.py`](init_project.py) (The Zero-Dependency Project Bootstrapper):**
+5. **[`AUDIT_REMEDIATION_LOG.md`](AUDIT_REMEDIATION_LOG.md) (Chronological Feature & Remediation Ledger):**
+   - Standardized, chronological record of all proactive feature additions, architectural enhancements, and red-team security remediations across all versions and phases.
+
+6. **[`PROJECT_MAP.md`](PROJECT_MAP.md) (Compact Repository Index):**
+   - Compact (< 60-line) architectural index mapping all repository paths to primary classes/functions.
+   - Enables targeted line-range reads and eliminates prompt context rot from re-reading whole repository trees.
+
+7. **[`init_project.py`](init_project.py) (The Zero-Dependency Project Bootstrapper):**
    - Standalone Python 3.13+ standard library automation script.
-   - Automates cloning, input validation, atomic `{{...}}` token substitutions, checkbox re-initialization, directory scaffolding, Git repository initialization, and post-run residual audits.
+   - Automates cloning, input validation, atomic `{{...}}` token substitutions, checkbox re-initialization, directory scaffolding (including starter `PROJECT_MAP.md`), Git repository initialization, and post-run residual audits.
 
 ---
 
@@ -70,9 +77,9 @@ This template repository is 100% parameter-driven using universal double-brace `
 
 | Placeholder Token | Description / Semantic Role | Example Value | Target Files Reconfigured |
 |---|---|---|---|
-| `{{PROJECT_ID}}` | Kebab-case unique project identifier and CLI console entrypoint command name | `demo-ai-platform`, `secops-sentinel` | [`GEMINI.md`](GEMINI.md), [`Enterprise_Blueprint.md`](Enterprise_Blueprint.md), [`Blueprint_Debug_Log.md`](Blueprint_Debug_Log.md), [`README.md`](README.md) |
+| `{{PROJECT_ID}}` | Kebab-case unique project identifier and CLI console entrypoint command name | `demo-ai-platform`, `secops-sentinel` | [`GEMINI.md`](GEMINI.md), [`Enterprise_Blueprint.md`](Enterprise_Blueprint.md), [`Blueprint_Debug_Log.md`](Blueprint_Debug_Log.md), [`AUDIT_REMEDIATION_LOG.md`](AUDIT_REMEDIATION_LOG.md), [`README.md`](README.md) |
 | `{{PACKAGE_NAME}}` | PEP 8 snake_case Python package identifier and root import directory (`src/<pkg>/`) | `demo_ai_platform`, `secops_sentinel` | [`GEMINI.md`](GEMINI.md), [`Enterprise_Blueprint.md`](Enterprise_Blueprint.md), [`Blueprint_Debug_Log.md`](Blueprint_Debug_Log.md), [`README.md`](README.md) |
-| `{{PROJECT_TITLE}}` | Human-readable title of the project | `Demo AI Platform`, `Secops Sentinel` | [`GEMINI.md`](GEMINI.md), [`Enterprise_Blueprint.md`](Enterprise_Blueprint.md), [`Blueprint_Debug_Log.md`](Blueprint_Debug_Log.md), [`README.md`](README.md) |
+| `{{PROJECT_TITLE}}` | Human-readable title of the project | `Demo AI Platform`, `Secops Sentinel` | [`GEMINI.md`](GEMINI.md), [`Enterprise_Blueprint.md`](Enterprise_Blueprint.md), [`Blueprint_Debug_Log.md`](Blueprint_Debug_Log.md), [`AUDIT_REMEDIATION_LOG.md`](AUDIT_REMEDIATION_LOG.md), [`README.md`](README.md) |
 | `{{MCP_URI_PREFIX}}` | Scheme prefix for Model Context Protocol resource URIs (`<prefix>://...`) | `demo`, `secops` | [`GEMINI.md`](GEMINI.md), [`Enterprise_Blueprint.md`](Enterprise_Blueprint.md) |
 | `{{DB_PREFIX}}` | Prefix for the SQLite WAL persistence ledger (`<prefix>_ledger.db`) | `demo`, `secops` | [`GEMINI.md`](GEMINI.md), [`Enterprise_Blueprint.md`](Enterprise_Blueprint.md) |
 | `{{ENV_PREFIX}}` | Uppercase prefix for webhook, callback, and signing secret environment variables (`<PREFIX>_WEBHOOK_SECRET`) | `DEMO_AI_PLATFORM`, `SECOPS_SENTINEL` | [`GEMINI.md`](GEMINI.md), [`Enterprise_Blueprint.md`](Enterprise_Blueprint.md) |
@@ -165,10 +172,10 @@ python init_project.py
 
 ### What `init_project.py` Automates:
 1. **Input Validation:** Enforces kebab-case project IDs (`^[a-z][a-z0-9-]*[a-z0-9]$`), PEP 8 package identifiers (`^[a-z][a-z0-9_]*$`), and valid port numbers (`1024`–`65535`).
-2. **Safe Isolated Cloning:** Copies [`GEMINI.md`](GEMINI.md), [`Enterprise_Blueprint.md`](Enterprise_Blueprint.md), [`Blueprint_Debug_Log.md`](Blueprint_Debug_Log.md), [`README.md`](README.md), and [`init_project.py`](init_project.py) into `--target-dir`, leaving the original template repository pristine (or requires explicit `--force` for in-place modifications).
+2. **Safe Isolated Cloning:** Copies [`GEMINI.md`](GEMINI.md), [`Enterprise_Blueprint.md`](Enterprise_Blueprint.md), [`Blueprint_Debug_Log.md`](Blueprint_Debug_Log.md), [`README.md`](README.md), [`PROJECT_MAP.md`](PROJECT_MAP.md), and [`init_project.py`](init_project.py) into `--target-dir`, leaving the original template repository pristine (or requires explicit `--force` for in-place modifications).
 3. **Universal Placeholder Reconfiguration:** Replaces `{{PROJECT_ID}}`, `{{PACKAGE_NAME}}`, `{{PROJECT_TITLE}}`, `{{MCP_URI_PREFIX}}`, `{{DB_PREFIX}}`, `{{ENV_PREFIX}}`, `{{DEPLOY_TARGET_LABEL}}`, `{{MAX_MEMORY_MB}}`, `{{MEMORY_WATCH_MB}}`, `{{MAX_OUTPUT_TOKENS}}`, `{{ORCHESTRATION_POLICY}}`, and `{{CLOUD_DEPLOYMENT_GUIDE}}` across all files.
 4. **Task & Checkbox Reset:** Re-initializes all completed tasks (`- [x]`) in [`Enterprise_Blueprint.md`](Enterprise_Blueprint.md) back to open status (`- [ ]`).
-5. **State & Incident Ledger Reset:** Resets Section 2 of [`Blueprint_Debug_Log.md`](Blueprint_Debug_Log.md) to a single clean baseline initialization entry while **100% preserving Section 3 historical architectural loopholes** (`GEM-LH-001` through `GEM-LH-023` and `EBP-LH-001` through `EBP-LH-024`).
+5. **State & Incident Ledger Reset:** Resets Section 2 of [`Blueprint_Debug_Log.md`](Blueprint_Debug_Log.md) to a single clean baseline initialization entry while **100% preserving Section 3 historical architectural loopholes** (`GEM-LH-001` through `GEM-LH-031` and `EBP-LH-001` through `EBP-LH-033`).
 6. **Starter Skeleton Scaffolding (`--scaffold-dirs`):** Generates package and test skeletons (`src/<package>/__init__.py`, `tests/__init__.py`, `docs/`, `prompts/modules/`) with valid package metadata.
 7. **Git Repository Initialization (`--git-init`):** Initializes a fresh Git repository on branch `main`, generates a comprehensive production `.gitignore`, and stages initial governance files (`git add .`).
 8. **Automated Post-Run Residual & Token Audit:** Scans all generated files to guarantee **zero unreplaced `{{...}}` tokens** and **zero legacy template tokens** remain, printing `[PASS]` confirmations.

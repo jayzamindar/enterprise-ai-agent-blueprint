@@ -21,7 +21,7 @@ Every phase in this blueprint must satisfy the following **Definition of Done (D
 5. **Cryptographic Payload Integrity & Strict Canonical Serialization:** All remediation plans must be cryptographically sealed with a full-payload HMAC-SHA256 signature (`plan_signature`) over canonical JSON generated strictly via `json.dumps(obj, sort_keys=True, separators=(',', ':'), ensure_ascii=False)`. Generic, un-sorted, or non-deterministic serialization methods are strictly prohibited. Authentication endpoints must use constant-time matching (`hmac.compare_digest()`) and fail closed in production when secrets are unconfigured.
 6. **Cloud-Native Deployment Portability & Memory Ceiling:** The system must run within a single non-root Docker container consuming $< 75\text{ MB}$ disk footprint and $< {{MAX_MEMORY_MB}}\text{ MB}$ RAM, fully deployable on {{DEPLOY_TARGET_LABEL}}. Payloads $> 10\text{ MB}$ are rejected before body buffering.
 7. **Continuous Observability & SQLite WAL Lock Isolation:** All operations must be traceable via OpenTelemetry spans, recorded in an append-only, thread-safe SQLite WAL ledger, and monitored across the Four Golden Signals. Cross-platform `filelock.FileLock` operations must strictly wrap WRITE mutations only; all READ queries must completely bypass `filelock` and rely on SQLite native MVCC to eliminate writer starvation and WAL bloat.
-8. **Modular Piece-by-Piece CI/CD Gating & Prompt Registry:** Every module must be built using SOLID industry best practices and pass local + GitHub Actions CI/CD verification gates before advancing to the next checklist item. During Phase 0 and Phase 1 (before application source code is generated under `src/`), static validation syntax analysis runs exclusively on Markdown hyperlinked integrity, schema validation files, and configuration syntax, preventing empty directory tool errors. All modular prompts must be saved in `modular_prompt.md`.
+8. **Cohesive Phase-Batched Execution, Targeted Reads & Fresh-Session Handoff Protocol:** Build and execute in cohesive batches of 1 coherent phase or 3–5 tightly coupled tasks per turn following SOLID industry best practices. Maintain a compact (< 60-line) `PROJECT_MAP.md` at repository root, performing targeted line-range reads of active specs and only the 2–4 target files per turn rather than re-reading thousands of lines. Execute single quiet verification sweeps (`ruff check src/ tests/ && ruff format --check src/ tests/ && mypy src/ && pytest -q --tb=short --cov=src/{{PACKAGE_NAME}} --cov-report=term:skip-covered --cov-fail-under=90`). AI agent sessions must not exceed 1–2 cohesive phases (~60% context window); upon completion or bloat, update `PROJECT_MAP.md`, ensure clean `git status --short`, and emit a Mandatory Fresh-Session Handoff Block before opening a fresh chat session. During Phase 0 and Phase 1 (before application source code is generated under `src/`), static validation syntax analysis runs exclusively on Markdown hyperlinked integrity, schema validation files, and configuration syntax, preventing empty directory tool errors. All modular prompts must be saved in `modular_prompt.md`.
 9. **Anti-Test-Cheating, Verifiable Proof & Anti-Looping Circuit Breaker:** Zero test tampering permitted (no test deletions, weakened assertions, skipped tests, lowered coverage gates, or self-mocking of internal guardrails). Every task completion must provide verbatim terminal output from `pytest` showing pass counts and $\ge 90\%$ coverage. If any verification or build command fails 3 consecutive times on the same module/error, the agent must immediately halt, log the incident in `Blueprint_Debug_Log.md`, and escalate to the human engineer.
 10. **Cross-Platform UTF-8 I/O & LLM Cost Circuit Breakers:** All file read/write operations must explicitly declare `encoding="utf-8"` across all platforms. Ingestion file reads must be bounded by byte/line caps (max 800 lines / 46KB). Active LLM usage is constrained by session token (`MAX_SESSION_TOKEN_BUDGET=500_000`) and cost (`DAILY_API_COST_LIMIT_USD=10.00`) circuit breakers that fail-safe route to Tertiary heuristics upon breach.
 
@@ -51,19 +51,21 @@ Every phase in this blueprint must satisfy the following **Definition of Done (D
     - `Blueprint_Repo_Baseline_AuditReport.md`
     - `Blueprint_Production_Readiness_Report.md`
     - `Blueprint_Debug_Log.md`
+    - `AUDIT_REMEDIATION_LOG.md`
 - [ ] **0.8 Architectural Delta & Loophole Registry:** Maintain `Blueprint_Debug_Log.md` establishing a forensic registry of all architectural edge cases, vulnerability traps, incident resolutions, explicit technical fixes, and CI/CD verification gate impacts.
+- [ ] **0.9 Project Map Index & Fresh-Session Handoff Protocol:** Create and maintain a compact (< 60-line) `PROJECT_MAP.md` at repository root mapping all files to primary classes/functions for targeted line-range reads, and establish the session context circuit breaker and fresh-session handoff protocol across agent workflows.
 
 ---
 
 ### Phase 1: [UNIVERSAL CORE] Foundation, Packaging & Environment Security
 *Goal: Standardize packaging for Python 3.13+, establish security hygiene, and install CLI console entrypoints.*
 
-- [ ] **1.1 PEP 517/621 Packaging:** Create/update `pyproject.toml` declaring dependencies, metadata, and the `{{PROJECT_ID}}` console script entrypoint targeting Python 3.13+.
+- [ ] **1.1 PEP 517/621 Packaging:** Create/update `pyproject.toml` declaring dependencies, metadata, `pytest-timeout` (`timeout = 15`, `timeout_method = "thread"`), and the `{{PROJECT_ID}}` console script entrypoint targeting Python 3.13+.
 - [ ] **1.2 Clean Environment Template:** Create `.env.example` documenting all configuration keys (`GEMINI_API_KEY`, `GEMINI_MODEL_NAME`, `GEMINI_THINKING_BUDGET`, `MAX_OUTPUT_TOKENS`, `MAX_PAYLOAD_SIZE_BYTES`, `MAX_SESSION_TOKEN_BUDGET`, `DAILY_API_COST_LIMIT_USD`, `OPENROUTER_API_KEY`, `MCP_API_KEY`, `PLAN_SIGNING_SECRET`, `{{ENV_PREFIX}}_WEBHOOK_SECRET`, `ENVIRONMENT`, `REQUIRE_AUTH`, `DB_PATH`, `AUDIT_LOG_DIR`, `FILELOCK_TIMEOUT_SEC`, `PORT`) without exposing secrets.
 - [ ] **1.3 Git Security Hygiene:** Overhaul `.gitignore` to prevent committing `.env`, virtual environments, SQLite databases (`*.db`, `*.db-wal`, `*.db-shm`), egg-info, or test caches. Verify via `git check-ignore -v .env`.
 - [ ] **1.4 Remove Stray Scaffolding:** Purge legacy or foreign configs (`.continue/`, stale draft directories) referencing unrelated models or obsolete frameworks.
 - [ ] **1.5 Master Agent Handbook:** Deploy `GEMINI.md` in repository root as the Universal Enterprise Master Handbook featuring the `[PROJECT_CONFIGURATION]` block and Template Cloning Note.
-- [ ] **1.6 Editable Installation:** Verify clean installation in a fresh virtual environment (`pip install -e ".[dev]"`).
+- [ ] **1.6 Editable Installation & Deterministic Lockfile:** Verify clean installation in a fresh virtual environment (`pip install -e ".[dev]"`), and generate and commit a deterministic lockfile (`uv.lock` or `requirements.lock`) to anchor supply-chain dependencies.
 
 ---
 
@@ -102,7 +104,7 @@ Every phase in this blueprint must satisfy the following **Definition of Done (D
 ### Phase 4: [DOMAIN REFERENCE: FINOPS] Deterministic SRE Heuristics & Guardrail Expansion
 *Goal: Broaden rule coverage and enrich execution payloads with automated rollbacks and least-privilege IAM policies.*
 
-- [ ] **4.1 Core Heuristic Rule Sets:** Implement deterministic heuristics:
+- [ ] **4.1 Core Heuristic Rule Sets:** Implement deterministic heuristics with Unicode NFKC normalization (`unicodedata.normalize("NFKC", val).strip().casefold()`):
   - EC2 underutilization: average CPU $< 10\%$, with memory safety floor check (abort rightsizing if `memory_utilization_avg_pct > 65.0\%` to prevent OOM).
   - RDS idle instances: zero active connections over evaluation window.
   - S3 storage optimization: transition cold standard storage ($> 50\%$ infrequent access) to `INTELLIGENT_TIERING` only when average object size $\ge 128\text{ KB}$ (avoiding small-object monitoring fee traps).
@@ -114,7 +116,7 @@ Every phase in this blueprint must satisfy the following **Definition of Done (D
 - [ ] **4.5 Strict Action Enum & Least-Privilege IAM Generation:** Validate actions against `ActionType` Enum. Synthesize exact, minimal AWS IAM statements with strict ARN patterns (`arn:aws:ec2:*:*:instance/{res_id}`, `arn:aws:ec2:*:*:volume/{res_id}`, `arn:aws:rds:*:*:db:{res_id}`, `arn:aws:s3:::{res_id}`) and strictly scoped action verbs. Disallow wildcards (`*`).
 - [ ] **4.6 Unconditional LLM Output Overwriting:** In `GuardrailEngine`, unconditionally overwrite `execution_payload["iam_policy"]`, `execution_payload["aws_cli"]`, and `execution_payload["rollback"]` using deterministic Python functions, stripping and discarding any LLM-hallucinated strings.
 - [ ] **4.7 Quarantine Pattern for High-Risk & Invalid Actions:** Refactor `GuardrailEngine` to mark `quarantined=True` and assign `quarantine_reason` for any Risk $\ge 3$ action missing explicit rollback steps OR any action with an invalid action Enum.
-- [ ] **4.8 Strict Canonical JSON HMAC Signing, Anti-Replay Verification & Request Idempotency:** Compute SHA-256 `plan_digest` and HMAC-SHA256 `plan_signature` over canonical JSON serialized explicitly via `json.dumps(plan.model_dump(mode="json", exclude={"plan_digest", "plan_signature"}), sort_keys=True, separators=(',', ':'), ensure_ascii=False)`. Enforce `verify_plan_signature()` with constant-time `hmac.compare_digest()` and verify `current_time <= expires_at` (rejecting expired plans or replayed IDs). Enforce monotonic `plan_id` / `idempotency_key` deduplication so retried requests return cached signed plans without executing duplicate state mutations or duplicate ledger events. Enforce fail-closed `RuntimeError` if secret is unset in production.
+- [ ] **4.8 Strict Canonical JSON HMAC Signing, Anti-Replay Verification & Request Idempotency:** Compute SHA-256 `plan_digest` and HMAC-SHA256 `plan_signature` over canonical JSON serialized explicitly via `json.dumps(plan.model_dump(mode="json", exclude={"plan_digest", "plan_signature"}), sort_keys=True, separators=(',', ':'), ensure_ascii=False)`. Enforce `verify_plan_signature()` with constant-time `hmac.compare_digest()` and verify `current_time < expires_at` (rejecting expired plans via `current_time >= expires_at` or replayed IDs). Enforce monotonic `plan_id` / `idempotency_key` deduplication so retried requests return cached signed plans without executing duplicate state mutations or duplicate ledger events. Enforce fail-closed `RuntimeError` if secret is unset in production.
 - [ ] **4.9 Dry-Run Simulation Mode:** Support `--dry-run` flag across CLI and MCP tool calls to validate execution payloads in simulation mode without mutating infrastructure.
 
 ---
@@ -147,8 +149,8 @@ Every phase in this blueprint must satisfy the following **Definition of Done (D
 
 - [ ] **6.1 In-Memory FinOps Ledger:** Implement thread-safe accumulation of total batches processed, resources audited, cumulative waste identified, and net savings realized.
 - [ ] **6.2 JSONL Ledger Export & Storage Retention Pruning:** Implement structured JSONL export for long-term file-based audit reporting and SIEM ingestion with daily log rotation (`audit-YYYY-MM-DD.jsonl`), 50MB per-file ceiling, and automated retention pruning (`AUDIT_LOG_MAX_RETENTION_DAYS=30`, cumulative 500MB cap via `AUDIT_LOG_MAX_SIZE_MB=500`) to prevent disk exhaustion.
-- [ ] **6.3 SQLite Persistent Ledger with MVCC Read-Bypass, Async Offloading, Schema Versioning & Checkpoints:** Implement SQLite persistence backend (`{{DB_PREFIX}}_ledger.db`) configured in WAL mode (`PRAGMA journal_mode=WAL;`) with `PRAGMA busy_timeout = 5000;`. Track `PRAGMA user_version` on startup and execute idempotent schema migrations in dedicated write transactions to prevent ledger corruption. Wrap WRITE mutations only with cross-platform `filelock.FileLock` (10.0s timeout via `FILELOCK_TIMEOUT_SEC`) offloaded to worker threads via `asyncio.to_thread()`. Bypasses `filelock` completely for all READ queries to preserve SQLite MVCC and eliminate writer starvation. Implement periodic passive checkpoints (`PRAGMA wal_checkpoint(PASSIVE);`) and truncate checkpoints (`PRAGMA wal_checkpoint(TRUNCATE);`) on shutdown or when `*.db-wal` exceeds 50MB.
-- [ ] **6.4 OpenTelemetry Instrumentation:** Implement `src/{{PACKAGE_NAME}}/observability.py` providing `trace_span` context managers, latency tracking, and metric counters for all critical operations.
+- [ ] **6.3 SQLite Persistent Ledger with MVCC Read-Bypass, Async Offloading, Schema Versioning & Checkpoints:** Implement SQLite persistence backend (`{{DB_PREFIX}}_ledger.db`) configured in WAL mode (`PRAGMA journal_mode=WAL;`) with `PRAGMA busy_timeout = 5000;` and explicit deterministic `try...finally` connection closing. Track `PRAGMA user_version` on startup and execute idempotent schema migrations in dedicated write transactions to prevent ledger corruption. Wrap WRITE mutations only with dynamically instantiated per-operation cross-platform `filelock.FileLock(..., timeout=FILELOCK_TIMEOUT_SEC)` (10.0s timeout via `FILELOCK_TIMEOUT_SEC`) offloaded to worker threads via `asyncio.to_thread()`, avoiding shared lock instances across threads. Bypasses `filelock` completely for all READ queries to preserve SQLite MVCC and eliminate writer starvation. Implement periodic passive checkpoints (`PRAGMA wal_checkpoint(PASSIVE);`) and truncate checkpoints (`PRAGMA wal_checkpoint(TRUNCATE);`) on shutdown or when `*.db-wal` exceeds 50MB.
+- [ ] **6.4 OpenTelemetry Instrumentation:** Implement `src/{{PACKAGE_NAME}}/observability.py` providing `trace_span` context managers, latency tracking, and metric counters for all critical operations. Ensure OpenTelemetry `TracerProvider` and `MeterProvider` instances execute explicit `.shutdown()` in test fixture teardowns to prevent resource leaks.
 
 ---
 
@@ -156,7 +158,7 @@ Every phase in this blueprint must satisfy the following **Definition of Done (D
 *Goal: Enforce 100% automated verification, multi-version testing, and containerized deployment.*
 
 - [ ] **7.1 Comprehensive Pytest Suite:** Develop an automated test suite achieving $\ge 90\%$ code coverage across schemas, heuristics, Gemini reasoning, fallback cascades, SSE authentication, CLI, security guardrails, MCP prompts/resources, and SQLite persistence.
-- [ ] **7.2 Multi-Version GitHub Actions CI, Quality Gates, Secret & Supply-Chain Scanning:** Configure GitHub Actions workflow running matrix tests across Python 3.13 and 3.14 on `ubuntu-latest`, executing `ruff`, `mypy`, and `pytest` coverage checks alongside `pip-audit` (dependency vulnerability scanning), pinned lockfile hash verification (`uv.lock` / `requirements.lock`), automated license compliance audit (verifying permissive MIT/Apache-2.0/BSD/ISC licenses and forbidding copyleft GPL/AGPL dependencies), and secret-scanning checks on every push and PR to gate each module before advancing. *(Note: During Phase 0 and Phase 1 before application source code is generated under `src/`, static validation syntax analysis must run exclusively on Markdown hyperlinked integrity, schema validation files, and configuration syntax, preventing empty directory tool errors. Remote GitHub Actions CI becomes mandatory for all subsequent tasks once Phase 7.2 is complete.)*
+- [ ] **7.2 Multi-Version GitHub Actions CI, Quality Gates, Secret & Supply-Chain Scanning:** Configure GitHub Actions workflow running matrix tests across Python 3.13 (primary blocking) and 3.14 (`continue-on-error: true` until upstream wheels stabilize) on `ubuntu-latest`, executing `ruff`, `mypy`, and quiet `pytest` coverage checks alongside `pip-audit` (dependency vulnerability scanning), pinned lockfile hash verification (`uv.lock` / `requirements.lock`), PEP 639-aware license compliance audit via `importlib.metadata` (allowing permissive `MIT`, `Apache-2.0`, `BSD`, `ISC`, `PSF-2.0`, `MPL-2.0`, `0BSD` and rejecting copyleft `GPL`/`AGPL`/`LGPL`/`SSPL`), scoped secret-scanning checks (excluding `.github/workflows/ci.yml` and honoring `# pragma: allowlist secret` in test fixtures), and mandatory live green GitHub Actions verification (`gh run list`) on every push and PR to gate each module before advancing. *(Note: During Phase 0 and Phase 1 before application source code is generated under `src/`, static validation syntax analysis must run exclusively on Markdown hyperlinked integrity, schema validation files, and configuration syntax, preventing empty directory tool errors. Remote GitHub Actions CI becomes mandatory for all subsequent tasks once Phase 7.2 is complete.)*
 - [ ] **7.3 Code Coverage Reporting:** Enforce automated coverage gates via `pytest --cov=src/{{PACKAGE_NAME}} --cov-fail-under=90`.
 - [ ] **7.4 Multi-Stage Non-Root Docker Packaging:** Author minimal, secure, non-root `Dockerfile` (< 75MB image size) and `docker-compose.yml` hosting the MCP SSE server with persistent SQLite volume and health probes.
 - [ ] **7.5 Container Build & Live Health Probe Verification:** Build Docker image (`{{PROJECT_ID}}:latest`) and validate live HTTP 200 on `/health` probe within container runtime.
@@ -193,7 +195,7 @@ Every phase in this blueprint must satisfy the following **Definition of Done (D
 - [ ] **9.15 Pre-Commit Repository Hygiene:** Enforce zero un-ignored `.env` files and verify cleanliness via pre-commit hooks.
 - [ ] **9.16 Live Gemini API Schema Pre-Flight Verification:** Validate `responseSchema` deserialization against live Google Protobuf parser.
 - [ ] **9.17 Valid AWS ARNs & Scoped IAM Actions:** Enforce strictly formatted AWS ARNs and action-specific permissions; reject unknown resource types.
-- [ ] **9.18 Full-Payload HMAC Signing, Anti-Replay TTL & Canonical Serialization:** Full-payload canonical JSON serialization via `json.dumps(obj, sort_keys=True, separators=(',', ':'), ensure_ascii=False)` with mandatory production secret enforcement and anti-replay verification (`issued_at`, `expires_at` TTL $\le 300\text{s}$, and unique `plan_id` nonce).
+- [ ] **9.18 Full-Payload HMAC Signing, Anti-Replay TTL, Unicode Normalization & Canonical Serialization:** Full-payload canonical JSON serialization via `json.dumps(obj, sort_keys=True, separators=(',', ':'), ensure_ascii=False)` with mandatory production secret enforcement, Unicode NFKC normalization (`unicodedata.normalize("NFKC", val).strip().casefold()`), and anti-replay verification (`issued_at`, `expires_at` TTL $\le 300\text{s}$ rejecting `current_time >= expires_at`, and unique `plan_id` nonce).
 - [ ] **9.19 Allowlist Protobuf Schema Sanitizer:** Allowlist schema fields (`ALLOWED_GEMINI_FIELDS`), strip unsupported OpenAPI constraints, and exclude `execution_payload` from LLM schema egress.
 - [ ] **9.20 Strip `<think>` Reasoning Blocks:** Remove `<think>` blocks and code fences from OpenRouter secondary model responses.
 - [ ] **9.21 Query Parameter API Key Redaction in Access Logs:** Active uvicorn filter masking `?apiKey=***`.
@@ -203,6 +205,7 @@ Every phase in this blueprint must satisfy the following **Definition of Done (D
 
 ### Phase 10: [UNIVERSAL CORE / DEPLOYMENT PROFILE] {{DEPLOY_TARGET_LABEL}} Production Release Documentation & Operational Sign-Off
 *Goal: Formulate comprehensive operational manuals and SRE readiness reviews for {{DEPLOY_TARGET_LABEL}} deployment.*
+*(Batching Guidance: Pure documentation and operational sign-off tasks 10.1–10.3 may be executed as a single cohesive batch followed by one link/schema verification pass).*
 
 - [ ] **10.1 Production Deployment Guide:** Author `docs/{{CLOUD_DEPLOYMENT_GUIDE}}` providing end-to-end guidance for {{DEPLOY_TARGET_LABEL}}, IAM least-privilege policies, secrets management, container pipelines, GitHub Actions OIDC CI/CD, and rollback runbooks.
 - [ ] **10.2 SRE Production Readiness Review:** Author `Blueprint_Production_Readiness_Report.md` evaluating the repository across 8 operational pillars, requiring a 100/100 score and PASS verdict across security controls, AI reasoning safety, FinOps guardrails, and concurrency bounds.
@@ -212,6 +215,7 @@ Every phase in this blueprint must satisfy the following **Definition of Done (D
 
 ### Phase 11: [UNIVERSAL CORE] Dedicated Post-Deployment Monitoring & Observability
 *Goal: Establish comprehensive post-deployment monitoring, alerting thresholds, and runbooks across the Four Golden Signals and AI governance.*
+*(Batching Guidance: Observability manual, telemetry, and alerting tasks 11.1–11.5 may be executed as a single cohesive batch followed by one link/schema verification pass).*
 
 - [ ] **11.1 Author Monitoring & Observability Manual:** Create `docs/MONITORING_AND_OBSERVABILITY.md` detailing operational monitoring standards.
 - [ ] **11.2 Infrastructure & Container Health Monitoring:**
@@ -254,6 +258,7 @@ Every phase in this blueprint must satisfy the following **Definition of Done (D
   - Implement the code or schema fix to resolve the edge case.
   - Verify that the test passes and add it permanently to the regression test suite.
 - [ ] **12.4 Final Release Sign-Off:** Execute the complete test suite, verify zero open vulnerabilities, and sign off on the production release.
+- [ ] **12.5 Post-Build Cross-Document Synchronization & Release Tagging:** Execute full synchronization of `README.md` (with clear document role descriptions and verified relative links), `PROJECT_MAP.md`, `AUDIT_REMEDIATION_LOG.md`, `docs/ARCHITECTURE.md`, `docs/TRD.md`, `docs/PRD.md`, `docs/URD.md`, `modular_prompt.md`, and `Blueprint_*.md` against actual shipped code, schemas, and test metrics—with zero dead links and zero "TBD" / "Planned" placeholders—before tagging `v1.0.0`.
 
 ---
 
@@ -264,7 +269,7 @@ Every phase in this blueprint must satisfy the following **Definition of Done (D
 pip install -e ".[dev]"
 
 # 2. Run full automated test suite with coverage
-python -m pytest -v --cov=src/{{PACKAGE_NAME}} --cov-report=term-missing
+ruff check src/ tests/ && ruff format --check src/ tests/ && mypy src/ && pytest -q --tb=short --cov=src/{{PACKAGE_NAME}} --cov-report=term:skip-covered --cov-fail-under=90
 
 # 3. Code quality and type safety checks
 ruff check src/ tests/

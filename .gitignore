@@ -23,6 +23,9 @@ build/
 *.egg-info/
 *.egg
 
+# Dependency Lockfiles (preserve uv.lock & requirements.lock when committed, ignore local temp locks)
+*.lock.tmp
+
 # Testing, Static Typing & Linting Caches
 .pytest_cache/
 .mypy_cache/
